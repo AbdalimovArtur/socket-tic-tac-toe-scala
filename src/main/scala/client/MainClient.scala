@@ -2,17 +2,13 @@ package client
 
 import java.net.Socket
 
-/**
-  * Created by Artur on 26.09.2017.
-  */
-
 object MainClient extends App {
 
   val socket = new Socket("localhost", 9090)
 
-  val currentPlayer = new Player();
+//  val currentPlayer = new Player();
 
-  new Thread(new PlayerClientThread(socket, currentPlayer)).start()
+  new Thread(new PlayerClientThread(socket)).start()
 
   while(!socket.isClosed) {
     import PlayerClientThread.Regex
@@ -21,6 +17,7 @@ object MainClient extends App {
 
     inMessage match {
       case r"\d:\d" => sendPosition(inMessage)
+      case "start" => sendCommand(inMessage)
       case _ => print("Not OK")
     }
   }
@@ -30,6 +27,10 @@ object MainClient extends App {
     socket.getOutputStream.write(message.getBytes, 0, message.length)
   }
 
+  def sendCommand(command: String): Unit = {
+    val message = s"COMMAND\n$command\n"
+    socket.getOutputStream.write(message.getBytes(), 0, message.length)
+  }
 
 
 }

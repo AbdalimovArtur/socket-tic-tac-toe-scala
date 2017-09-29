@@ -5,7 +5,7 @@ import java.net.Socket
 
 object PlayerServerThread {
   val messages = List[String](
-    "Ok\n", "Cell is Busy, Try another\n", "Wrong input\n"
+    "OK\n", "Cell is Busy, Try another\n", "Wrong input\n"
   )
 
   implicit def byteToString(bytes: Array[Byte]): String = {
@@ -16,7 +16,6 @@ object PlayerServerThread {
 class PlayerServerThread(val socket: Socket, val player: Player) extends Runnable {
   import PlayerServerThread._
 
-  val objectOutputStream = new ObjectOutputStream(socket.getOutputStream)
 
   /***
     * implicitly converts array of bytes to string
@@ -47,10 +46,11 @@ class PlayerServerThread(val socket: Socket, val player: Player) extends Runnabl
   }
 
   def makeMove(turn: List[Int]) = {
-    val formattedTurn = turn.filter(x => x >= 3 && x <=1 ).map(x => x - 1)
+    val formattedTurn = turn.filter(x => x <= 3 && x >= 1 ).map(x => x - 1)
 
     formattedTurn.size match {
       case 2 =>
+        println("Updating cells")
         respond(player.gameSession.update(formattedTurn.head, formattedTurn.tail.head, player.sign))
       case _ =>
         respond(2)
@@ -59,14 +59,20 @@ class PlayerServerThread(val socket: Socket, val player: Player) extends Runnabl
 
   def respond(command: Int): Unit = {
     import PlayerServerThread._
+
     socket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
+    val objectOutputStream = new ObjectOutputStream(socket.getOutputStream)
     objectOutputStream.writeObject(player.gameSession.field)
+
+    player.opponentSocket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
+    val oponentObjectOutputStream = new ObjectOutputStream(player.opponentSocket.getOutputStream)
+    oponentObjectOutputStream.writeObject(player.gameSession.field)
   }
 
   def readCommand(): Unit = {
     val message: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
     message.toUpperCase match {
-      case "Start" => MainServer.startGame()
+      case "START" => MainServer.startGame()
     }
   }
 }

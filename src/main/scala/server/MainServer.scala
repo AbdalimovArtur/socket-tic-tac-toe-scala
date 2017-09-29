@@ -35,10 +35,12 @@ object MainServer extends App {
 
     sendSettings(first.socket, first.sign, first.opponentSocket)
     sendSettings(second.socket, second.sign, second.opponentSocket)
+
+    println("Game is started")
   }
 
   def sendSettings(socket: Socket, sign: Char, opponent: Socket): Unit = {
-    val message = s"SETTINGS:\n$sign\n$opponent"
+    val message = s"SETTINGS\n$sign\n$opponent\n"
     socket.getOutputStream.write(message.getBytes, 0, message.length)
   }
 

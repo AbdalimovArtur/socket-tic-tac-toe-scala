@@ -3,37 +3,54 @@ package client
 import java.io.ObjectInputStream
 import java.net.Socket
 
-/**
-  * Created by Artur on 26.09.2017.
-  */
-
 object PlayerClientThread {
 
   implicit def byteToString(bytes: Array[Byte]): String = {
     new String(bytes, "UTF-8")
   }
 
+  val messages = List[String](
+    "OK", "Cell is Busy, Try another", "Wrong input\n"
+  )
+
   implicit class Regex(sc: StringContext) {
     def r = new util.matching.Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
   }
 }
 
-class PlayerClientThread(val socket: Socket, val player: Player) extends Runnable {
+class PlayerClientThread(val socket: Socket) extends Runnable {
 
-  val objectInputStream = new ObjectInputStream(socket.getInputStream)
+  import PlayerClientThread._
 
   override def run(): Unit = {
-    import PlayerClientThread._
 
     while(!socket.isClosed) {
       val message: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
       message match {
-        case "Ok" => readArray()
+        case mes if contains(message) => {
+          println(mes)
+          readArray()
+        }
+        case "SETTINGS" => readSettings()
+        case "TURN" => print(message)
+        case _ => print(message)
       }
     }
   }
 
   def readArray(): Unit = {
-    player.updateField(objectInputStream.readObject())
+    println("reading object")
+    val objectInputStream = new ObjectInputStream(socket.getInputStream)
+    Player.updateField(objectInputStream.readObject())
+  }
+
+  def readSettings(): Unit = {
+    val sign: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
+    val opponentInfo: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
+    println(s"Your sign is $sign, and opponent $opponentInfo")
+  }
+
+  def contains(message: String): Boolean = {
+    !messages.find(x => x.equals(message)).isEmpty
   }
 }

@@ -1,18 +1,15 @@
 package client;
 
-/**
- * Created by Artur on 29.09.2017.
- */
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+
 public class Player {
 
-    char[][] field;
+    public static void updateField(Object object) {
 
-    public Player() {
-        field = new char[3][3];
-    }
-
-    public void updateField(Object ob) {
-        field = (char[][])ob;
+        char[][] field = (char[][])object;
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
