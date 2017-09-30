@@ -4,17 +4,28 @@ import java.io.ObjectOutputStream
 import java.net.Socket
 
 object PlayerServerThread {
-  val messages = List[String](
-    "OK\n", "Cell is Busy, Try another\n", "Wrong input\n", "Not your Turn\n"
-  )
 
   implicit def byteToString(bytes: Array[Byte]): String = {
     new String(bytes, "UTF-8")
+  }
+
+  def messages(sign: Char): List[String] = {
+    val messages = List[String](
+      "OK\n",
+      "Cell is Busy, Try another\n",
+      "Wrong input\n",
+      "Not your Turn\n",
+      s"Congratulations, Player $sign Won!\n",
+      "Tie occurred :(\n"
+    )
+    messages
   }
 }
 
 class PlayerServerThread(val socket: Socket, val player: Player) extends Runnable {
   import PlayerServerThread._
+
+
 
 
   /***
@@ -58,25 +69,39 @@ class PlayerServerThread(val socket: Socket, val player: Player) extends Runnabl
 
 
   def respond(command: Int): Unit = {
-    import PlayerServerThread._
 
     def sendGameField(vSocket: Socket) = {
       val objectOutputStream = new ObjectOutputStream(vSocket.getOutputStream)
       objectOutputStream.writeObject(player.gameSession.field)
     }
 
-    socket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
-    sendGameField(socket)
+    if (command >= 4) {
+
+
+      val message = s"END\n${messages(player.sign)(command)}"
+
+      player.socket.getOutputStream.write(message.getBytes(), 0, message.length)
+      player.opponentPlayer.socket.getOutputStream.write(message.getBytes(), 0, message.length)
+
+      sendGameField(socket)
+      sendGameField(player.opponentPlayer.socket)
+    } else {
+
+      socket.getOutputStream.write(messages(player.sign)(command).getBytes(), 0, messages(player.sign)(command).length)
+      sendGameField(socket)
+    }
 
     if (command == 0) {
 
       player.turn = false
       player.opponentPlayer.turn = true
 
-      val messageForOpponent = s"OPPONENT\n${messages(command)}"
+      val messageForOpponent = s"OPPONENT\n${messages(player.sign)(command)}"
+
       player.opponentPlayer.socket.getOutputStream.write(messageForOpponent.getBytes(), 0, messageForOpponent.length)
       sendGameField(player.opponentPlayer.socket)
     }
+
   }
 
   def readCommand(): Unit = {

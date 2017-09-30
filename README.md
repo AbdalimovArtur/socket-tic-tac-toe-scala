@@ -8,6 +8,4 @@ To run game execute:
 
 TODO:
 - Help messages
-- validation of input
 - JavaDoc
-- Winner validation

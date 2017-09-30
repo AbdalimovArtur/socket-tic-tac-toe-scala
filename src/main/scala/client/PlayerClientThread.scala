@@ -27,13 +27,15 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
     while(!socket.isClosed) {
       val message: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
       message match {
-        case mes if contains(message) => {
+
+        case mes if contains(message) =>
           println(mes)
           readArray()
-        }
+
         case "OPPONENT" => readOpponentRespond()
         case "SETTINGS" => readSettings()
         case "TURN" => print(message)
+        case "END" => happyEnd()
         case _ => print(message)
       }
     }
@@ -48,6 +50,7 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
     val sign: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
     val opponentInfo: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
     println(s"Your sign is $sign, and opponent $opponentInfo")
+    MainClient.started = true
   }
 
   def contains(message: String): Boolean = !messages.find(x => x.equals(message)).isEmpty
@@ -60,5 +63,12 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
         readArray()
         println("Now is your turn")
     }
+  }
+
+  def happyEnd() = {
+    val respond: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
+    println(respond)
+    readArray()
+    MainClient.socket.close()
   }
 }

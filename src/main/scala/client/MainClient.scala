@@ -7,6 +7,7 @@ object MainClient extends App {
   val socket = new Socket("localhost", 9090)
 
 //  val currentPlayer = new Player();
+  var started: Boolean = false
 
   new Thread(new PlayerClientThread(socket)).start()
 
@@ -17,10 +18,15 @@ object MainClient extends App {
 
     inMessage match {
       case r"\d:\d" =>
-        sendPosition(inMessage)
-        println("Please wait for opponents turn")
+        if (started) {
+          sendPosition(inMessage)
+          println("Please wait for opponents turn")
+        } else {
+          println("Game is not started yet")
+        }
       case "start" => sendCommand(inMessage)
-      case _ => print("Not OK")
+      case _ =>
+        println("Incorrect input format, try again")
     }
   }
 
