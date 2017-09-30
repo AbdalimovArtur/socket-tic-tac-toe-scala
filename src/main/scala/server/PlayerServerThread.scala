@@ -1,11 +1,11 @@
 package server
 
-import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+import java.io.ObjectOutputStream
 import java.net.Socket
 
 object PlayerServerThread {
   val messages = List[String](
-    "OK\n", "Cell is Busy, Try another\n", "Wrong input\n"
+    "OK\n", "Cell is Busy, Try another\n", "Wrong input\n", "Not your Turn\n"
   )
 
   implicit def byteToString(bytes: Array[Byte]): String = {
@@ -22,8 +22,6 @@ class PlayerServerThread(val socket: Socket, val player: Player) extends Runnabl
     * @param bytes
     * @return
     */
-
-
   override def run(): Unit = {
 
     while(!socket.isClosed) {
@@ -47,26 +45,38 @@ class PlayerServerThread(val socket: Socket, val player: Player) extends Runnabl
 
   def makeMove(turn: List[Int]) = {
     val formattedTurn = turn.filter(x => x <= 3 && x >= 1 ).map(x => x - 1)
-
     formattedTurn.size match {
       case 2 =>
         println("Updating cells")
-        respond(player.gameSession.update(formattedTurn.head, formattedTurn.tail.head, player.sign))
+        if (player.turn) respond(player.gameSession.update(formattedTurn.head, formattedTurn.tail.head, player.sign))
+        else respond(3)
       case _ =>
         respond(2)
     }
   }
 
+
+
   def respond(command: Int): Unit = {
     import PlayerServerThread._
 
-    socket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
-    val objectOutputStream = new ObjectOutputStream(socket.getOutputStream)
-    objectOutputStream.writeObject(player.gameSession.field)
+    def sendGameField(vSocket: Socket) = {
+      val objectOutputStream = new ObjectOutputStream(vSocket.getOutputStream)
+      objectOutputStream.writeObject(player.gameSession.field)
+    }
 
-    player.opponentSocket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
-    val oponentObjectOutputStream = new ObjectOutputStream(player.opponentSocket.getOutputStream)
-    oponentObjectOutputStream.writeObject(player.gameSession.field)
+    socket.getOutputStream.write(messages(command).getBytes(), 0, messages(command).length)
+    sendGameField(socket)
+
+    if (command == 0) {
+
+      player.turn = false
+      player.opponentPlayer.turn = true
+
+      val messageForOpponent = s"OPPONENT\n${messages(command)}"
+      player.opponentPlayer.socket.getOutputStream.write(messageForOpponent.getBytes(), 0, messageForOpponent.length)
+      sendGameField(player.opponentPlayer.socket)
+    }
   }
 
   def readCommand(): Unit = {

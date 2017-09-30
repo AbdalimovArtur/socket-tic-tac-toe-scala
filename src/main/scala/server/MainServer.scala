@@ -22,8 +22,8 @@ object MainServer extends App {
     val first = players.get(0)
     val second = players.get(1)
 
-    first.opponentSocket = second.socket
-    second.opponentSocket = first.socket
+    first.opponentPlayer = second
+    second.opponentPlayer = first
 
     val commonGameSession = new GameSession()
 
@@ -33,8 +33,11 @@ object MainServer extends App {
     first.sign = 'X'
     second.sign = 'O'
 
-    sendSettings(first.socket, first.sign, first.opponentSocket)
-    sendSettings(second.socket, second.sign, second.opponentSocket)
+    first.turn = false
+    second.turn = true
+
+    sendSettings(first.socket, first.sign, first.opponentPlayer.socket)
+    sendSettings(second.socket, second.sign, second.opponentPlayer.socket)
 
     println("Game is started")
   }

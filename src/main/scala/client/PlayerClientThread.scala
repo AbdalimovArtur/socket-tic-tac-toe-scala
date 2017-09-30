@@ -10,7 +10,7 @@ object PlayerClientThread {
   }
 
   val messages = List[String](
-    "OK", "Cell is Busy, Try another", "Wrong input\n"
+    "OK", "Cell is Busy, Try another", "Wrong input", "Not your Turn"
   )
 
   implicit class Regex(sc: StringContext) {
@@ -31,6 +31,7 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
           println(mes)
           readArray()
         }
+        case "OPPONENT" => readOpponentRespond()
         case "SETTINGS" => readSettings()
         case "TURN" => print(message)
         case _ => print(message)
@@ -39,7 +40,6 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
   }
 
   def readArray(): Unit = {
-    println("reading object")
     val objectInputStream = new ObjectInputStream(socket.getInputStream)
     Player.updateField(objectInputStream.readObject())
   }
@@ -50,7 +50,15 @@ class PlayerClientThread(val socket: Socket) extends Runnable {
     println(s"Your sign is $sign, and opponent $opponentInfo")
   }
 
-  def contains(message: String): Boolean = {
-    !messages.find(x => x.equals(message)).isEmpty
+  def contains(message: String): Boolean = !messages.find(x => x.equals(message)).isEmpty
+
+  def readOpponentRespond(): Unit = {
+    val respond: String = Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray
+    respond match {
+      case "OK" =>
+        println("Opponent made turn")
+        readArray()
+        println("Now is your turn")
+    }
   }
 }

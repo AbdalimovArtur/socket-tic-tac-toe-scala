@@ -6,7 +6,7 @@ import java.net.Socket;
 public class Player {
 
     Socket socket;
-    Socket opponentSocket;
+    Player opponentPlayer;
     char sign;
     boolean turn;
     char[][] testField = new char[3][3];

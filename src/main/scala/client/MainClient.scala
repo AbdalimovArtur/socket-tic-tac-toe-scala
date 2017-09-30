@@ -16,7 +16,9 @@ object MainClient extends App {
     val inMessage = io.StdIn.readLine()
 
     inMessage match {
-      case r"\d:\d" => sendPosition(inMessage)
+      case r"\d:\d" =>
+        sendPosition(inMessage)
+        println("Please wait for opponents turn")
       case "start" => sendCommand(inMessage)
       case _ => print("Not OK")
     }
