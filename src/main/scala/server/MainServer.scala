@@ -5,6 +5,13 @@ import java.util
 
 import scala.collection.mutable.ListBuffer
 
+/***
+  * Starting point of Server application
+  * Handles all connections to ServerSocket, and holds all players
+  * as static instance of ArrayList, objects in scala works as Singleton objects
+  *
+  * @author Artur Abdalimov
+  */
 object MainServer extends App {
 
   val serverSocket = new ServerSocket(9090)
@@ -14,9 +21,13 @@ object MainServer extends App {
     val connected = serverSocket.accept()
     val player = new Player(connected)
     players.add(player)
-    new Thread(new PlayerServerThread(connected, player)).start()
+    new Thread(new PlayerServerThread(player)).start()
   }
 
+  /***
+    * This method initiates game, by creating common GameSession for
+    * two players, sending to the sockets information about game
+    */
   def startGame(): Unit = {
 
     val first = players.get(0)
@@ -42,7 +53,15 @@ object MainServer extends App {
     println("Game is started")
   }
 
+  /***
+    * Creates well-formatted message that will be recognized by sockets
+    * on the client side
+    * @param socket destination of the message
+    * @param opponent socket destination of the message
+    * @param sign players sign '
+    */
   def sendSettings(socket: Socket, sign: Char, opponent: Socket): Unit = {
+
     val message = s"SETTINGS\n$sign\n$opponent\n"
     socket.getOutputStream.write(message.getBytes, 0, message.length)
   }

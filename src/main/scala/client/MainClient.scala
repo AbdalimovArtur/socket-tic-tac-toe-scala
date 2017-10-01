@@ -2,11 +2,15 @@ package client
 
 import java.net.Socket
 
+/***
+  * Starting point of client application
+  * Creates PlayerClientThread that handles messages
+  * from inputStream, and waits for input from player
+  */
 object MainClient extends App {
 
   val socket = new Socket("localhost", 9090)
 
-//  val currentPlayer = new Player();
   var started: Boolean = false
 
   new Thread(new PlayerClientThread(socket)).start()
@@ -30,11 +34,19 @@ object MainClient extends App {
     }
   }
 
+  /***
+    * Sends to the outputStream position where player wants to make turn
+    * @param position
+    */
   def sendPosition(position: String): Unit = {
     val message = s"TURN\n$position\n"
     socket.getOutputStream.write(message.getBytes, 0, message.length)
   }
 
+  /***
+    * Sends command to the outputStream that was written by player from keyboard
+    * @param command
+    */
   def sendCommand(command: String): Unit = {
     val message = s"COMMAND\n$command\n"
     socket.getOutputStream.write(message.getBytes(), 0, message.length)

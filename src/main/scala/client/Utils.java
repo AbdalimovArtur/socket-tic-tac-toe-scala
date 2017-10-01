@@ -5,8 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 
-public class Player {
+/***
+ * Helper class that contains only one method
+ */
+public class Utils {
 
+    /***
+     * Receives object, converts it to the 2d array of characters,
+     * displays to the players console
+     * @param object
+     */
     public static void updateField(Object object) {
 
         char[][] field = (char[][])object;

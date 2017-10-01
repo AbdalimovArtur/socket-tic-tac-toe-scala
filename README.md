@@ -8,4 +8,3 @@ To run game execute:
 
 TODO:
 - Help messages
-- JavaDoc
