@@ -1,10 +1,6 @@
 package client;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-
 /***
  * Helper class that contains only one method
  */

@@ -123,7 +123,7 @@ class PlayerServerThread(val player: Player) extends Runnable {
 
   /***
     * Reads command from inputStream, in case it receives START message
-    * starts game
+    * it starts game
     */
   def readCommand(): Unit = {
     val message: String = Stream.continually(player.socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray

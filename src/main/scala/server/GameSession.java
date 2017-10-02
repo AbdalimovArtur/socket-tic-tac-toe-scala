@@ -1,8 +1,6 @@
 package server;
 
 
-import java.util.Arrays;
-
 /***
  * This class describes game state, instance of this class is common for
  * two players, to both of them has access to it.

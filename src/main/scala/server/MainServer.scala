@@ -3,8 +3,6 @@ package server
 import java.net.{ServerSocket, Socket}
 import java.util
 
-import scala.collection.mutable.ListBuffer
-
 /***
   * Starting point of Server application
   * Handles all connections to ServerSocket, and holds all players
